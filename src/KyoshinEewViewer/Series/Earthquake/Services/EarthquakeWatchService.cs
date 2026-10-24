@@ -18,6 +18,10 @@ using System.Reactive;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels.Message;
+using System.Text.Json;
 
 namespace KyoshinEewViewer.Series.Earthquake.Services;
 
@@ -55,15 +59,21 @@ public class EarthquakeWatchService : ObservableObject
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
+	private AxisInformationProvider AxisInformationProvider { get; }
+	private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
 	public EarthquakeWatchService(
 		ILogger<EarthquakeWatchService> logger,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
-		DmdataRedundantTelegramPublisher dmdata)
+		DmdataRedundantTelegramPublisher dmdata,
+		AxisInformationProvider axisInformationProvider)
 	{
 		Logger = logger;
 		Config = config;
+		AxisInformationProvider = axisInformationProvider;
+		AxisInformationProvider.MessageReceived += OnAxisMessageReceived;
+		AxisInformationProvider.Initialize();
 
 		telegramProvider.Subscribe(
 			InformationCategory.Earthquake,
@@ -215,6 +225,43 @@ public class EarthquakeWatchService : ObservableObject
 		{
 			Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
 			return null;
+		}
+	}
+
+	private void OnAxisMessageReceived(AxisWebSocketMessage message)
+	{
+		try
+		{
+			if (message.Channel != "jmx-seismology")
+				return;
+
+			Logger.LogInformation("AXIS から地震情報を受信しました");
+			var rawText = message.Message.GetRawText();
+			var eqMessage = JsonSerializer.Deserialize<EarthquakeMessage>(rawText, JsonOptions);
+			if (eqMessage == null)
+			{
+				Logger.LogWarning("AXIS の地震情報メッセージのデシリアライズに失敗しました");
+				return;
+			}
+
+			var xmlBytes = AxisEarthquakeToXmlConverter.ConvertToXml(eqMessage);
+			var telegram = new AxisTelegram(eqMessage, xmlBytes);
+
+			_ = Task.Run(async () =>
+			{
+				try
+				{
+					await ProcessInformation(telegram);
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "AXIS 地震情報の処理中に例外が発生しました");
+				}
+			});
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "AXIS メッセージ受信ハンドラで例外が発生しました");
 		}
 	}
 }

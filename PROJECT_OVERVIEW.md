@@ -5,7 +5,7 @@
 - **主要ターゲット**: 地震観測者、配信者、防災に関心を持つ一般ユーザー。
 - **提供価値**:
   - 地震波のリアルタイム到達予測・震度分布の美麗な地図上プロット。
-  - 複数データソース（DM-D.S.S、気象庁XML、強震モニタ、QZSS等）の冗長受信と高速処理。
+  - 複数データソース（DM-D.S.S、気象庁XML、強震モニタ、QZSS、AXIS等）の冗長受信と高速処理。
   - VoiceVox音声読み上げやカスタム通知音、柔軟なワークフロー自動化。
 
 ## 2. コア仕様・主要機能
@@ -14,6 +14,9 @@
   - 緊急地震速報（予報・警報）のリアルタイム受信・ポップアップ・音声通知。
 - **マルチデータソース連携**:
   - 気象庁防災情報XML、DM-D.S.S、強震モニタAPI、QZSS（準天頂衛星）災害危機管理通報の受信。
+  - **AXIS (Prioris) リアルタイム連携**:
+    - `eew` チャンネル: 緊急地震速報の超低遅延プッシュ受信。
+    - `jmx-seismology` チャンネル: 気象庁地震情報（震度速報、震源・震度に関する情報、長周期地震動観測情報）の超低遅延プッシュ受信とJMAXML変換・即時プロット。
 - **地図・可視化エンジン**:
   - SkiaSharpを用いたベクター地図投影・タイルキャッシュ・震央位置および震度色分け描画。
 - **通知・自動化システム**:
@@ -24,11 +27,11 @@
   - v0.20以降のビルトイン自動更新機能。
 
 ## 3. 技術スタック
-- **UIフレームワーク**: Avalonia UI (v11系), ReactiveUI
+- **UIフレームワーク**: Avalonia UI (v11系), ReactiveUI / CommunityToolkit.Mvvm / R3
 - **グラフィックス**: SkiaSharp
 - **言語・ランタイム**: C# (.NET 10.0)
 - **依存ライブラリ**:
-  - MessagePack, System.Text.Json
+  - MessagePack, System.Text.Json, U8Xml
   - LibVLCSharp / ManagedBass (メディア・音声再生)
   - Sentry (エラートラッキング)
 - **構成管理・外部連携**:
@@ -57,5 +60,6 @@
   ```
 
 ## 5. 変更履歴（Changelog）
-- 2026-10-24: [リポジトリ移行] フォーク先リポジトリ `sakurakun999/KyoshinEewViewerIngen`（サブモジュール同期済）へ再クローンし、本家を `upstream` に設定。PROJECT_OVERVIEW.md を作成。
+- 2026-10-25: [AXIS jmx-seismology対応] AXIS（Prioris）のWebSocketチャンネル `jmx-seismology` に対応。気象庁XML互換XML変換ブリッジ（`AxisEarthquakeToXmlConverter`）および `AxisTelegram` を実装し、地震情報（震度速報、震源・震度情報）を数秒以内の超低遅延で即時受信・可視化・通知可能にした。同一電文の後着重複排除、単一WebSocket接続維持、異常時停止によるサーバー負荷軽減対策を実施。
 - 2026-10-24: [総合修正・品質強化] 敵対的コード監査に基づき、コマンドインジェクション脆弱性修正、自動更新fail-open修正およびロールバック機能追加、音声再生デッドロック防止(TaskCompletionSource化)、強震モニタ描画ループのGCアロケーション削減、Webhookタイムアウト・サイズ制限、NotImplementedExceptionフォールバック、XAML StringFormat Mode=OneWay適用、極小フォント是正を実施。
+- 2026-10-24: [リポジトリ移行] フォーク先リポジトリ `sakurakun999/KyoshinEewViewerIngen`（サブモジュール同期済）へ再クローンし、本家を `upstream` に設定。PROJECT_OVERVIEW.md を作成。

@@ -34,7 +34,12 @@ public partial class AxisInformationProvider : ObservableObject
 	private bool IsFeatureRequired { get; set; }
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasEewChannel))]
+	[NotifyPropertyChangedFor(nameof(HasSeismologyChannel))]
 	public partial AxisJwtPayload? CurrentPayload { get; private set; }
+
+	public bool HasEewChannel => CurrentPayload?.Channels?.Contains("eew") ?? false;
+	public bool HasSeismologyChannel => CurrentPayload?.Channels?.Contains("jmx-seismology") ?? false;
 
 	[ObservableProperty]
 	public partial string? PayloadErrorMessage { get; private set; }
@@ -157,6 +162,11 @@ public partial class AxisInformationProvider : ObservableObject
 	{
 		if (IsConnecting || WebSocketConnection.IsConnected)
 			return;
+		if (string.IsNullOrWhiteSpace(Config.Axis.Jwt) || PayloadErrorMessage != null)
+		{
+			CurrentStatus = "アクセストークンが無効なため接続しません";
+			return;
+		}
 		try
 		{
 			IsConnecting = true;

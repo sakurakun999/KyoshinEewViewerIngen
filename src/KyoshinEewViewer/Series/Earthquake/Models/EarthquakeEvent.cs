@@ -70,6 +70,10 @@ public partial class EarthquakeEvent : ObservableObject
 			return null;
 		ProcessedTelegramIds.Add(telegram.Key);
 
+		// 同一の電文（同一タイトル かつ 同一発表時刻）が既に登録されている場合は重複処理を防止
+		if (Fragments.Any(f => f.Title == document.Control.Title && f.ArrivedTime == document.Head.ReportDateTime.DateTime))
+			return null;
+
 		// 取り消し処理
 		if (document.Head.InfoType == "取消")
 		{
