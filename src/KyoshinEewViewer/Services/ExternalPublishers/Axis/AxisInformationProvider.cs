@@ -6,6 +6,7 @@ using R3;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
@@ -48,7 +49,7 @@ public partial class AxisInformationProvider : ObservableObject
 		Logger = logger;
 		Config = config;
 
-		JwtRefreshTimer = new Timer(_ => CheckAndRefreshJwt(), null, Timeout.Infinite, Timeout.Infinite);
+		JwtRefreshTimer = new Timer(_ => _ = CheckAndRefreshJwtAsync(), null, Timeout.Infinite, Timeout.Infinite);
 		ReconnectTimer = new Timer(_ => TryReconnect(), null, Timeout.Infinite, Timeout.Infinite);
 
 		WebSocketConnection = new AxisWebSocketConnection(ApiClient);
@@ -123,11 +124,11 @@ public partial class AxisInformationProvider : ObservableObject
 
 			if (enabled)
 			{
-				Connect();
+				_ = ConnectAsync();
 				return;
 			}
 			// 無効化
-			Disconnect();
+			_ = DisconnectAsync();
 		});
 	}
 
@@ -138,7 +139,7 @@ public partial class AxisInformationProvider : ObservableObject
 
 		IsFeatureRequired = true;
 		if (Config.Axis.Enable)
-			Connect();
+			_ = ConnectAsync();
 	}
 
 	private Random Random { get; } = new();
@@ -148,11 +149,11 @@ public partial class AxisInformationProvider : ObservableObject
 			return;
 		// 1.5倍～2.5倍の間で最大1時間までバックオフタイムを伸ばしていく
 		BackoffTime = Math.Min(BackoffTime * (1.5 + Random.NextDouble()), 3600);
-		Connect();
+		_ = ConnectAsync();
 	}
 
 	private bool IsConnecting { get; set; }
-	private async void Connect()
+	private async Task ConnectAsync()
 	{
 		if (IsConnecting || WebSocketConnection.IsConnected)
 			return;
@@ -174,7 +175,7 @@ public partial class AxisInformationProvider : ObservableObject
 		IsConnecting = false;
 	}
 
-	private async void Disconnect()
+	private async Task DisconnectAsync()
 	{
 		try
 		{
@@ -191,7 +192,7 @@ public partial class AxisInformationProvider : ObservableObject
 		CurrentStatus = "切断しました";
 	}
 
-	public async void CheckAndRefreshJwt()
+	public async Task CheckAndRefreshJwtAsync()
 	{
 		if (!Config.Axis.Enable || string.IsNullOrWhiteSpace(Config.Axis.Jwt))
 			return;

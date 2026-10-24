@@ -344,8 +344,8 @@ public partial class UpdateCheckService : ObservableObject
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, "ハッシュ検証中にエラーが発生しました。検証をスキップします");
-			return true;
+			Logger.LogError(ex, "ハッシュ検証中にエラーが発生しました");
+			return false;
 		}
 	}
 
@@ -443,8 +443,25 @@ public partial class UpdateCheckService : ObservableObject
 			// 現在の実行ファイルをリネーム（Windows 7+で実行中でもOK）
 			File.Move(currentExe, backupExe);
 
-			// 新バージョンを配置
-			File.Copy(newExe, currentExe);
+			try
+			{
+				// 新バージョンを配置
+				File.Copy(newExe, currentExe);
+			}
+			catch (Exception copyEx)
+			{
+				Logger.LogError(copyEx, "新バージョンの配置に失敗したため、元の実行ファイルにロールバックします");
+				try
+				{
+					if (File.Exists(backupExe) && !File.Exists(currentExe))
+						File.Move(backupExe, currentExe);
+				}
+				catch (Exception rollbackEx)
+				{
+					Logger.LogError(rollbackEx, "実行ファイルのロールバックに失敗しました");
+				}
+				throw;
+			}
 
 			Logger.LogInformation("更新が完了しました。アプリケーションを再起動します");
 

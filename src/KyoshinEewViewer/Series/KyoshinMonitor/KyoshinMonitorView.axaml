@@ -114,8 +114,8 @@
                             </Panel.Styles>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
                                         Classes.replay="{Binding CurrentInformationHost.IsReplay}">
-                                <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:yyyy-MM-dd}}" FontSize="18" Margin="0,0,0,4" VerticalAlignment="Bottom" />
-                                <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:HH:mm:ss}}" FontSize="32" FontWeight="Bold" Margin="5,-2,5,0" />
+                                <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:yyyy-MM-dd}, Mode=OneWay}" FontSize="18" Margin="0,0,0,4" VerticalAlignment="Bottom" />
+                                <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:HH:mm:ss}, Mode=OneWay}" FontSize="32" FontWeight="Bold" Margin="5,-2,5,0" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="5"
                                         Classes.replay="{Binding CurrentInformationHost.IsReplay}">

@@ -58,3 +58,4 @@
 
 ## 5. 変更履歴（Changelog）
 - 2026-10-24: [リポジトリ移行] フォーク先リポジトリ `sakurakun999/KyoshinEewViewerIngen`（サブモジュール同期済）へ再クローンし、本家を `upstream` に設定。PROJECT_OVERVIEW.md を作成。
+- 2026-10-24: [総合修正・品質強化] 敵対的コード監査に基づき、コマンドインジェクション脆弱性修正、自動更新fail-open修正およびロールバック機能追加、音声再生デッドロック防止(TaskCompletionSource化)、強震モニタ描画ループのGCアロケーション削減、Webhookタイムアウト・サイズ制限、NotImplementedExceptionフォールバック、XAML StringFormat Mode=OneWay適用、極小フォント是正を実施。

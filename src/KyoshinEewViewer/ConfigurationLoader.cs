@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Workflows;
@@ -159,7 +160,7 @@ public static class ConfigurationLoader
 		{
 			SavePrivate(config, !_configLoadedFromApplicationData);
 		}
-		catch { }
+		catch (Exception ex) { AppLog.Default.LogError(ex, "設定ファイルの保存に失敗しました"); }
 	}
 	private static void SavePrivate(KyoshinEewViewerConfiguration config, bool useApplicationDataDirectory)
 	{
@@ -235,8 +236,9 @@ public static class ConfigurationLoader
 		{
 			SaveWorkflowsPrivate(config, !_workflowsLoadedFromApplicationData);
 		}
-		catch
+		catch (Exception ex)
 		{
+			AppLog.Default.LogError(ex, "ワークフローファイルの保存に失敗しました");
 		}
 	}
 
@@ -287,7 +289,7 @@ public static class ConfigurationLoader
 		if (!File.Exists(tmpFileName))
 			return;
 		try { File.Delete(tmpFileName); }
-		catch { }
+		catch (Exception ex) { AppLog.Default.LogError(ex, "設定ファイルの保存に失敗しました"); }
 	}
 
 	/// <summary>

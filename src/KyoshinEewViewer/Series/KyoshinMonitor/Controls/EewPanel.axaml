@@ -62,13 +62,13 @@
 	<Grid RowDefinitions="24,75,auto,auto" Classes.warning="{Binding IsWarning}">
 		<Border Classes="header" CornerRadius="4,4,0,0">
 			<Panel Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" TextElement.FontSize="18">
-				<TextBlock IsVisible="{Binding !IsFinal}" Text="{Binding SerialNo, StringFormat={}緊急地震速報({0:00}報)}" />
-				<TextBlock IsVisible="{Binding IsFinal}" Text="{Binding SerialNo, StringFormat={}緊急地震速報({0:00}報/最終)}" />
+				<TextBlock IsVisible="{Binding !IsFinal}" Text="{Binding SerialNo, StringFormat={}緊急地震速報({0:00}報), Mode=OneWay}" />
+				<TextBlock IsVisible="{Binding IsFinal}" Text="{Binding SerialNo, StringFormat={}緊急地震速報({0:00}報/最終), Mode=OneWay}" />
 			</Panel>
 		</Border>
 		<Panel Grid.Row="1" Classes="container" VerticalAlignment="Top">
 			<StackPanel Margin="5,-3,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
-				<TextBlock Text="{Binding Hypocenter.OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}" FontSize="18" />
+				<TextBlock Text="{Binding Hypocenter.OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}, Mode=OneWay}" FontSize="18" />
 				<TextBlock Text="発生" FontSize="14" VerticalAlignment="Bottom" Margin="3,0,0,2" />
 			</StackPanel>
 			<TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
@@ -83,7 +83,7 @@
 					<TextBlock Text="規模: " VerticalAlignment="Bottom" FontSize="16" />
 					<TextBlock Text="M" VerticalAlignment="Bottom" FontSize="22" FontWeight="Bold" Margin="0,0,0,-2" />
 					<TextBlock Text="不明" IsVisible="{Binding Hypocenter.Magnitude, Converter={x:Static ObjectConverters.IsNull}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
-					<TextBlock Text="{Binding Hypocenter.Magnitude,StringFormat={}{0:f1}}" IsVisible="{Binding Hypocenter.Magnitude, Converter={x:Static ObjectConverters.IsNotNull}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
+					<TextBlock Text="{Binding Hypocenter.Magnitude,StringFormat={}{0:f1}, Mode=OneWay}" IsVisible="{Binding Hypocenter.Magnitude, Converter={x:Static ObjectConverters.IsNotNull}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
 				</StackPanel>
 				<TextBlock IsVisible="{Binding Hypocenter.IsTemporary}" Text="規模未受信" FontSize="16" Margin="5,2" />
 			</StackPanel>
@@ -118,9 +118,9 @@
 				</Border.IsVisible>
 				<Panel Margin="10,0">
 					<StackPanel IsVisible="{Binding !Hypocenter.IsTemporary}" Spacing="-5" TextElement.FontSize="13">
-						<TextBlock Text="{Binding Hypocenter.Accuracy.LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter}" />
-						<TextBlock Text="{Binding Hypocenter.Accuracy.DepthAccuracy, StringFormat={}震源深さ: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=depth}" />
-						<TextBlock Text="{Binding Hypocenter.Accuracy.MagnitudeAccuracy, StringFormat={}　　規模: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=magnitude}" />
+						<TextBlock Text="{Binding Hypocenter.Accuracy.LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter, Mode=OneWay}" />
+						<TextBlock Text="{Binding Hypocenter.Accuracy.DepthAccuracy, StringFormat={}震源深さ: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=depth, Mode=OneWay}" />
+						<TextBlock Text="{Binding Hypocenter.Accuracy.MagnitudeAccuracy, StringFormat={}　　規模: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=magnitude, Mode=OneWay}" />
 					</StackPanel>
 					<TextBlock IsVisible="{Binding Hypocenter.IsTemporary}" Text="仮定震源要素" Margin="0,0,0,4" HorizontalAlignment="Center" FontWeight="Bold" FontSize="24" />
 				</Panel>
@@ -180,7 +180,7 @@
                 <Panel>
 				    <StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
 					    <TextBlock Text="警報地域" FontSize="15" />
-					    <TextBlock Text="{Binding WarningAreas.Codes.Length, StringFormat={}{0}地域}" FontSize="12" VerticalAlignment="Bottom" />
+					    <TextBlock Text="{Binding WarningAreas.Codes.Length, StringFormat={}{0}地域, Mode=OneWay}" FontSize="12" VerticalAlignment="Bottom" />
 				    </StackPanel>
 					<TextBlock FontSize="11" Margin="3,0" VerticalAlignment="Bottom" HorizontalAlignment="Right">
 						<Run Text="警報受信元: " /><Run Text="{Binding WarningAreas.DisplaySource}" /><Run Text=" (" /><Run Text="{Binding WarningAreas.SerialNo}" /><Run Text="報)" />
@@ -203,7 +203,7 @@
 			</Border>
 		</StackPanel>
         <Border Grid.Row="3" Classes="separator" CornerRadius="0,0,4,4">
-			<TextBlock Text="{Binding DisplaySource, StringFormat={}受信元: {0}}" FontSize="12" Margin="5,0" />
+			<TextBlock Text="{Binding DisplaySource, StringFormat={}受信元: {0}, Mode=OneWay}" FontSize="12" Margin="5,0" />
 		</Border>
         <Panel Grid.Row="1" Grid.RowSpan="2" Classes="container" IsVisible="{Binding IsCancelled}" VerticalAlignment="Stretch">
             <TextBlock IsVisible="{Binding !IsTrueCancelled}" Text="キャンセルまたは受信範囲外" FontSize="22" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />

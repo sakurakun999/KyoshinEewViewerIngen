@@ -161,7 +161,8 @@ public partial class TsunamiSeries : SeriesBase
 			s =>
 			{
 				SourceName = null;
-				// TODO: 状態管理はもうちょっとちゃんとやる必要がある
+				if (Current != null && Current.CheckExpired(timerService.CurrentTime))
+					Current = null;
 			}
 		);
 

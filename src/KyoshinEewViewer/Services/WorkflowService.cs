@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -23,6 +24,7 @@ public class WorkflowService
 		=> _allActions.Add(new WorkflowActionInfo(typeof(T), displayName, () => new T()));
 
 	private ILogger Logger { get; }
+	private readonly SemaphoreSlim _concurrencySemaphore = new(5, 5);
 
 	public WorkflowService(ILogger<WorkflowService> logger)
 	{
@@ -52,6 +54,7 @@ public class WorkflowService
 		// ユーザーワークフローの実行
 		var userWorkflowTasks = triggeredUserWorkflows.Select(async w =>
 		{
+			await _concurrencySemaphore.WaitAsync();
 			try
 			{
 				Logger.LogDebug("ユーザーワークフロー {Name} がトリガーされました", w.Name);
@@ -67,12 +70,17 @@ public class WorkflowService
 			{
 				Logger.LogError(ex, "ユーザーワークフロー {Name} の実行中に例外が発生しました", w.Name);
 			}
-		});
+			finally
+			{
+				_concurrencySemaphore.Release();
+			}
+		}).ToArray();
 
 		var triggeredSystemWorkflows = SystemWorkflows.Where(w => w.Enabled && (w.Trigger?.CheckTrigger(e) ?? false)).ToArray();
 		// システムワークフローの実行
 		var systemWorkflowTasks = triggeredSystemWorkflows.Select(async w =>
 		{
+			await _concurrencySemaphore.WaitAsync();
 			try
 			{
 				Logger.LogDebug("システムワークフロー {Name} がトリガーされました", w.Name);
@@ -88,9 +96,24 @@ public class WorkflowService
 			{
 				Logger.LogError(ex, "システムワークフロー {Name} の実行中に例外が発生しました", w.Name);
 			}
-		});
+			finally
+			{
+				_concurrencySemaphore.Release();
+			}
+		}).ToArray();
 
-		// ユーザーワークフローとシステムワークフローを並行実行
-		Task.WhenAll(userWorkflowTasks.Concat(systemWorkflowTasks).ToArray()).ConfigureAwait(false);
+		// ユーザーワークフローとシステムワークフローを並行実行 (バックグラウンドで安全に待機)
+		var allTasks = userWorkflowTasks.Concat(systemWorkflowTasks).ToArray();
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				await Task.WhenAll(allTasks);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "ワークフローの並行実行タスクで例外が発生しました");
+			}
+		});
 	}
 }

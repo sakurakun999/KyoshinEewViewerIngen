@@ -27,7 +27,7 @@ public class PolylineFeature
 			TopologyArcType.Coastline => PolylineType.Coastline,
 			TopologyArcType.Admin => PolylineType.AdminBoundary,
 			TopologyArcType.Area => PolylineType.AreaBoundary,
-			_ => throw new NotImplementedException("未定義のTopologyArcTypeです"),
+			_ => PolylineType.AreaBoundary,
 		};
 		Arc = arc.Arc ?? throw new Exception($"マップデータがうまく読み込めていません arc {index} がnullです");
 

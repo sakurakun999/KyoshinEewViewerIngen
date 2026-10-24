@@ -30,6 +30,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 	// 全点分の絶対ピクセル座標のキャッシュ。配列参照+ズーム単位で再利用され、
 	// 毎フレーム全観測点分発生していた投影計算(三角関数)が配列差し替え・ズーム変更時のみになる
 	private readonly PointLayoutCache<RealtimeObservationPoint> _pointLayoutCache = new(p => p.Location);
+	private readonly List<RectD> _fixedRectBuffer = [];
+	private readonly List<(RealtimeObservationPoint Point, PointD Center)> _renderedPointsBuffer = [];
 
 	private KyoshinEvent[]? _kyoshinEvents;
 	public KyoshinEvent[]? KyoshinEvents
@@ -259,7 +261,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 			var pixelBound = param.PixelBound;
 			// ラベルの重なり判定用 観測点と地点予測で共有する
-			var fixedRect = new List<RectD>();
+			_fixedRectBuffer.Clear();
+			var fixedRect = _fixedRectBuffer;
 
 			RenderObservationPoints();
 			void RenderObservationPoints()
@@ -271,7 +274,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 				var pixels = _pointLayoutCache.Get(points, zoom).Pixels;
 				var circleSize = (float)(Math.Max(1, zoom - 4) * 1.75);
 				var circleVector = new PointD(circleSize, circleSize);
-				var renderedPoints = new List<(RealtimeObservationPoint Point, PointD Center)>();
+				_renderedPointsBuffer.Clear();
+				var renderedPoints = _renderedPointsBuffer;
 
 				// 描画対象の観測点のリストアップ
 				for (var i = 0; i < points.Length; i++)
@@ -301,7 +305,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 					fixedRect.Add(bound);
 				}
 
-				var ordersRenderedPoints = renderedPoints.OrderByDescending(p => p.Point.LatestIntensity ?? -1000);
+				renderedPoints.Sort((a, b) => (b.Point.LatestIntensity ?? -1000).CompareTo(a.Point.LatestIntensity ?? -1000));
+				var ordersRenderedPoints = renderedPoints;
 #if DEBUG
 				// 観測点名の描画
 				if (zoom >= Config.RawIntensityObject.ShowNameZoomLevel)
@@ -387,8 +392,9 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 					}
 #endif
 				// 観測点本体の描画(リストアップ時に震度・画面内の判定は済んでいる)
-				foreach (var (point, pointCenter) in ordersRenderedPoints.Reverse())
+				for (var pointIndex = ordersRenderedPoints.Count - 1; pointIndex >= 0; pointIndex--)
 				{
+					var (point, pointCenter) = ordersRenderedPoints[pointIndex];
 					var color = point.LatestColor;
 
 					// 震度アイコンの描画

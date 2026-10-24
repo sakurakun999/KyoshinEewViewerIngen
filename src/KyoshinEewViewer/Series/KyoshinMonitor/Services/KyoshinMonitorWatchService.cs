@@ -272,6 +272,16 @@ public class KyoshinMonitorWatchService
 						{
 							var saveDirectory = Path.Combine(PlatformDirectories.ApplicationData, "HighMissingRateResponses");
 							Directory.CreateDirectory(saveDirectory);
+
+							// 古いファイルをローテーション削除 (最大50件)
+							var existingFiles = new DirectoryInfo(saveDirectory).GetFiles("*.png").OrderBy(f => f.CreationTimeUtc).ToArray();
+							if (existingFiles.Length >= 50)
+							{
+								foreach (var file in existingFiles.Take(existingFiles.Length - 49))
+								{
+									try { file.Delete(); } catch { }
+								}
+							}
 							var fileName = $"{time:yyyyMMdd_HHmmss}_{(int)Math.Floor(missingRate * 100):D2}.png";
 							var filePath = Path.Combine(saveDirectory, fileName);
 							await File.WriteAllBytesAsync(filePath, imageBytes);

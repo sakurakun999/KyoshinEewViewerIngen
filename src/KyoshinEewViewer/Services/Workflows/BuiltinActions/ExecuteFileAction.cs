@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
@@ -59,20 +60,25 @@ public partial class ExecuteFileAction : WorkflowAction
 		var info = CreateProcessStartInfo(renderedFilePath, renderedArguments, renderedWorkingDirectory);
 		info.EnvironmentVariables["KEVI_EVENT_DATA"] = JsonSerializer.Serialize(content, JsonSerializerOptions);
 
-		var task = Task.Run(() =>
+		var task = Task.Run(async () =>
 		{
 			try
 			{
 				var sw = Stopwatch.StartNew();
-				var process = Process.Start(info);
+				using var process = Process.Start(info);
 				if (process == null)
 				{
 					LatestExecuteResult = "プロセスの起動に失敗しました";
 					return;
 				}
 				LatestExecuteResult = "実行中...";
-				process.WaitForExit();
+				using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+				await process.WaitForExitAsync(cts.Token);
 				LatestExecuteResult = $"終了コード: {process.ExitCode}\n実行時間:{sw.ElapsedMilliseconds}ms";
+			}
+			catch (OperationCanceledException)
+			{
+				LatestExecuteResult = "プロセスの実行がタイムアウト(2分)しました。";
 			}
 			catch (Exception ex)
 			{
@@ -89,28 +95,45 @@ public partial class ExecuteFileAction : WorkflowAction
 		if (UseShellExecute)
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				return new ProcessStartInfo("cmd", $"/c start /b {filePath.Replace("&", "^&")}")
+			{
+				return new ProcessStartInfo(filePath, arguments)
 				{
 					WorkingDirectory = workingDirectory,
-					CreateNoWindow = true,
+					UseShellExecute = true,
 				};
+			}
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-				return new ProcessStartInfo("xdg-open", filePath)
+			{
+				var psi = new ProcessStartInfo("xdg-open")
 				{
 					WorkingDirectory = workingDirectory,
+					UseShellExecute = false,
 					CreateNoWindow = true,
 				};
+				psi.ArgumentList.Add(filePath);
+				if (!string.IsNullOrWhiteSpace(arguments))
+					psi.ArgumentList.Add(arguments);
+				return psi;
+			}
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-				return new ProcessStartInfo("open", filePath)
+			{
+				var psi = new ProcessStartInfo("open")
 				{
 					WorkingDirectory = workingDirectory,
+					UseShellExecute = false,
 					CreateNoWindow = true,
 				};
+				psi.ArgumentList.Add(filePath);
+				if (!string.IsNullOrWhiteSpace(arguments))
+					psi.ArgumentList.Add(arguments);
+				return psi;
+			}
 		}
 
 		return new ProcessStartInfo(filePath, arguments)
 		{
 			WorkingDirectory = workingDirectory,
+			UseShellExecute = false,
 			CreateNoWindow = true,
 		};
 	}

@@ -26,7 +26,7 @@
         </LayoutTransformControl.LayoutTransform>
         <Grid RowDefinitions="auto,*">
             <Grid ColumnDefinitions="*,auto">
-                <TextBlock FontSize="24" Text="{Binding Date, StringFormat=yyyy年MM月dd日}" Margin="0,5"
+                <TextBlock FontSize="24" Text="{Binding Date, StringFormat=yyyy年MM月dd日, Mode=OneWay}" Margin="0,5"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            Foreground="{DynamicResource MainForegroundColor}" FontWeight="Bold"/>
                 <Border Grid.Column="1" BorderThickness="1,0,0,0" Padding="5,0" Margin="0,0,5,0"
@@ -83,8 +83,8 @@
                                                     
                                                     <StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}"
                                                                 Orientation="Horizontal" Margin="2,-2.5,0,0" HorizontalAlignment="Left">
-                                                        <TextBlock Text="M" FontSize="11" Margin="0,3,0,0" />
-                                                        <TextBlock Text="{Binding Magnitude, StringFormat={}{0:0.0}}" FontWeight="Bold"/>
+                                                        <TextBlock Text="M" FontSize="12" Margin="0,2,0,0" />
+                                                        <TextBlock Text="{Binding Magnitude, StringFormat={}{0:0.0}, Mode=OneWay}" FontWeight="Bold"/>
                                                     </StackPanel>
                                                     <StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                                                 Orientation="Horizontal" Margin="2,-2.5,0,0" HorizontalAlignment="Left">
@@ -95,11 +95,11 @@
                                                         <StackPanel IsVisible="{Binding !IsVeryShallow}"
                                                                     Orientation="Horizontal" Margin="0,-2.5,3,0" HorizontalAlignment="Right">
                                                             <TextBlock Text="{Binding Depth}" FontWeight="Bold" />
-                                                            <TextBlock Text="km" FontSize="10" Margin="0,4,0,0" />
+                                                            <TextBlock Text="km" FontSize="12" Margin="0,2,0,0" />
                                                         </StackPanel>
                                                         <StackPanel IsVisible="{Binding IsVeryShallow}"
                                                                     Orientation="Horizontal" Margin="0,-2.5,3,0" HorizontalAlignment="Right">
-                                                            <TextBlock Text="ごく浅い" FontSize="10" Margin="0,4,0,0" />
+                                                            <TextBlock Text="ごく浅い" FontSize="12" Margin="0,2,0,0" />
                                                         </StackPanel>
                                                     </Panel>
                                                 </Panel>

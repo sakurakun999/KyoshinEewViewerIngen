@@ -263,9 +263,9 @@ var files = await tlc.StorageProvider.OpenFilePickerAsync(options);
 
 xUnit を使用。`tests/` ディレクトリに存在するプロジェクトのみテストを実行する。
 
-- `KyoshinEewViewer.Tests`: テンプレートシステム
-- `KyoshinEewViewer.JmaXmlParser.Tests`: XML パース検証
+- `KyoshinEewViewer.Tests`: サービス・テンプレート・電文受信処理
 - `KyoshinEewViewer.DCReportParser.Tests`: QZSS 災危通報パース検証
+- `KyoshinEewViewer.UiTests`: UI・結合テスト (通信隔離Linux環境)
 
 ### テスト方針
 

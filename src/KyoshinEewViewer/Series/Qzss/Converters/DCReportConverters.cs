@@ -53,7 +53,7 @@ public class DCReportConverters : IValueConverter
 				(byte)127 => "不明",
 				(byte)101 => "巨大",
 				byte m => $"M{m / 10.0:F1}",
-				_ => throw new NotImplementedException($"不明な Magnitude {value}")
+				_ => "不明"
 			},
 			"InformationSerialCode" => value switch
 			{
@@ -356,7 +356,7 @@ public class DCReportConverters : IValueConverter
 				_ => false,
 			},
 			"TyphoonReferenceTimeType" => value is ReferenceTimeType typhoonReferenceTimeType ? GetReferenceTimeTypeText(typhoonReferenceTimeType) : "不明",
-			_ => throw new NotImplementedException($"不明な targetType {targetType}")
+			_ => "-"
 		};
 
 	/// <summary>

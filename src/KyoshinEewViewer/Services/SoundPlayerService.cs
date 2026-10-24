@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Services;
 /// <summary>
 /// 音声を再生するサービス
 /// </summary>
-public class SoundPlayerService
+public class SoundPlayerService : IDisposable
 {
 	internal KyoshinEewViewerConfiguration Config { get; }
 
@@ -80,11 +80,22 @@ public class SoundPlayerService
 		);
 #endif
 	}
-	~SoundPlayerService()
+	private bool _isDisposed;
+
+	public void Dispose()
 	{
+		if (_isDisposed)
+			return;
+		_isDisposed = true;
 		DisposeItems();
 		if (IsAvailable)
 			Bass.Free();
+		GC.SuppressFinalize(this);
+	}
+
+	~SoundPlayerService()
+	{
+		Dispose();
 	}
 
 	private Dictionary<SoundCategory, List<Sound>> Sounds { get; } = [];
@@ -106,16 +117,25 @@ public class SoundPlayerService
 		}
 		Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(volume, 0, 1));
 
-		var mre = new ManualResetEventSlim(false);
+		var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 		Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
 		{
 			Bass.StreamFree(ch);
-			mre.Set();
+			tcs.TrySetResult(true);
 		});
 		if (Bass.ChannelPlay(ch))
 		{
 			if (waitToEnd)
-				await Task.Run(mre.Wait);
+			{
+				var lenBytes = Bass.ChannelGetLength(ch);
+				var seconds = Bass.ChannelBytes2Seconds(ch, lenBytes);
+				var timeout = seconds > 0 ? TimeSpan.FromSeconds(seconds + 3) : TimeSpan.FromSeconds(30);
+				using var cts = new CancellationTokenSource(timeout);
+				using (cts.Token.Register(() => tcs.TrySetResult(false)))
+				{
+					await tcs.Task;
+				}
+			}
 			return true;
 		}
 		Logger.LogWarning("音声の再生開始に失敗しました。 LastError:{LastError} Path:{Path}", Bass.LastError, path);
