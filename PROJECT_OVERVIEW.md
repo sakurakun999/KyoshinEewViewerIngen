@@ -26,10 +26,10 @@
 ## 3. 技術スタック
 - **UIフレームワーク**: Avalonia UI (v11系), ReactiveUI
 - **グラフィックス**: SkiaSharp
-- **言語・ランタイム**: C# (.NET 9.0)
+- **言語・ランタイム**: C# (.NET 10.0)
 - **依存ライブラリ**:
   - MessagePack, System.Text.Json
-  - LibVLCSharp (メディア再生)
+  - LibVLCSharp / ManagedBass (メディア・音声再生)
   - Sentry (エラートラッキング)
 - **構成管理・外部連携**:
   - Git Submodule: `jma-code-dictionary` (気象庁コード辞書)
@@ -38,7 +38,7 @@
     - `upstream`: `ingen084/KyoshinEewViewerIngen`（本家）
 
 ## 4. 環境構成・起動コマンド
-- **必要SDK**: .NET SDK 9.0以降（ローカル確認済: 9.0.319）
+- **必要SDK**: .NET SDK 10.0（※developブランチ現行。ローカルの .NET 9.0環境では `net10.0` ターゲットのため要SDK更新または一時的なターゲット変更）
 - **開発実行コマンド**:
   ```bash
   # 依存パッケージ復元
