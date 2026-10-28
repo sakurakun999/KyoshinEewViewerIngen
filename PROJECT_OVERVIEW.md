@@ -60,6 +60,7 @@
   ```
 
 ## 5. 変更履歴（Changelog）
+- 2026-10-28: [本家アップデート適用 & EXE発行] 本家リポジトリ（upstream/develop）の最新更新を取り込みマージ。音声出力デバイス選択設定機能（#235）、起動時クラッシュ修正（#234）、Sentryプロセスリソース監視、DmdataSharp更新、AXIS EEWのReceiverリファクタリングを統合。SoundPlayerServiceにおけるマージコンフリクトを解消（デバイス切り替え対応と再生待機タイムアウト保護の両立）。全ユニットテスト（322件）通過を確認後、Windows x64用単一バイナリEXE（`publish/win-x64/KyoshinEewViewer.exe`）を発行。
 - 2026-10-25: [AXIS jmx-seismology対応] AXIS（Prioris）のWebSocketチャンネル `jmx-seismology` に対応。気象庁XML互換XML変換ブリッジ（`AxisEarthquakeToXmlConverter`）および `AxisTelegram` を実装し、地震情報（震度速報、震源・震度情報）を数秒以内の超低遅延で即時受信・可視化・通知可能にした。同一電文の後着重複排除、単一WebSocket接続維持、異常時停止によるサーバー負荷軽減対策を実施。
 - 2026-10-24: [総合修正・品質強化] 敵対的コード監査に基づき、コマンドインジェクション脆弱性修正、自動更新fail-open修正およびロールバック機能追加、音声再生デッドロック防止(TaskCompletionSource化)、強震モニタ描画ループのGCアロケーション削減、Webhookタイムアウト・サイズ制限、NotImplementedExceptionフォールバック、XAML StringFormat Mode=OneWay適用、極小フォント是正を実施。
 - 2026-10-24: [リポジトリ移行] フォーク先リポジトリ `sakurakun999/KyoshinEewViewerIngen`（サブモジュール同期済）へ再クローンし、本家を `upstream` に設定。PROJECT_OVERVIEW.md を作成。
